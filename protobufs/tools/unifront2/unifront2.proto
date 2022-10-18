@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+enum CallbackRequestMethod {
+  GET     = 0;
+  POST    = 1;
+  PUT     = 2;
+  HEAD    = 3;
+  DELETE  = 4;
+  CONNECT = 5;
+  OPTIONS = 6;
+  TRACE   = 7;
+  PATCH   = 8;
+}
+
+message CallbackRequest {
+  bytes                 uuid        = 1;
+  bytes                 group_uuid  = 2;
+  CallbackRequestMethod method      = 3;
+  bytes                 body        = 4;
+  map<string, string>   headers     = 5;
+  string                uri         = 6;
+  string                queryString = 7;
+}
+
+message CallbackReply {
+  bytes               body    = 1;
+  map<string, string> headers = 2;
+  uint32              status  = 3;
+}
+
+message GetCallbacksRequest {
+  uint32         limit        = 1;
+  repeated bytes groups_uuids = 2;
+}
+
+message GetCallbacksResponse {
+  repeated CallbackRequest callbacks = 1;
+}
+
+message SendReplyRequest {
+  bytes         uuid       = 1;
+  bytes         group_uuid = 2;
+  CallbackReply reply      = 3;
+}
+
+message SendReplyResponse {}
