@@ -1,0 +1,7 @@
+language: go
+go:
+    - 1.7
+    - tip
+
+install: go get -t -tags integration ./...
+script: go test -tags integration

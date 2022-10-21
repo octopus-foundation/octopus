@@ -6,3 +6,6 @@ checks:
 
 tests:
 	go test -failfast ./...
+
+full-tests:
+	go test -tags integration ./...
