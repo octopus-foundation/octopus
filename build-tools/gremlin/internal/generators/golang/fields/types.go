@@ -53,9 +53,15 @@ func resolveScalarType(targetFile GoEntitiesProvider, field *types.MessageFieldD
 		ProtoType: field.ScalarValueType,
 	}
 	if field.Repeated {
-		return &goRepeatedValueType{
-			RepeatedType: baseType,
-		}, nil
+		if baseType.CanBePacked() {
+			return &goRepeatedPackedValueType{
+				RepeatedType: baseType,
+			}, nil
+		} else {
+			return &goRepeatedValueType{
+				RepeatedType: baseType,
+			}, nil
+		}
 	} else if field.Map {
 		basicKeyType, err := resolveMapKeyType(field)
 		if err != nil {

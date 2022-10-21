@@ -29,17 +29,17 @@ const (
 	Fixed32Type    ProtoWireType = 5
 )
 
-type LazyBuffer struct {
+type Reader struct {
 	buf []byte
 }
 
-func NewLazyBuffer(data []byte) *LazyBuffer {
-	return &LazyBuffer{
+func NewReader(data []byte) *Reader {
+	return &Reader{
 		buf: data,
 	}
 }
 
-func (p *LazyBuffer) Bytes() []byte {
+func (p *Reader) Bytes() []byte {
 	if p == nil {
 		return nil
 	}

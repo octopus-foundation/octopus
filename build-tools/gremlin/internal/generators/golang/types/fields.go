@@ -117,8 +117,8 @@ func (g *GoStructField) writeUnmarshal(sb *strings.Builder) {
 }
 
 func (g *GoStructField) writeStructField(sb *strings.Builder) {
-	sb.WriteString(fmt.Sprintf("\t%v\t%v\t`json:\"%v,omitempty\"`\n",
-		g.Name, g.Type.WriterTypeName(), g.Proto.Name.ProtoName()))
+	sb.WriteString(fmt.Sprintf(`	%v	%v	`+"`"+`json:"%v,omitempty"`+"`"+`
+`, g.Name, g.Type.WriterTypeName(), g.Proto.Name.ProtoName()))
 }
 
 func (g *GoStructField) writeToStruct(sb *strings.Builder) {
@@ -134,6 +134,18 @@ func (g *GoStructField) writeToStruct(sb *strings.Builder) {
 	}
 `, g.Name, g.Type.WriterTypeName(), g.Type.ToStruct("\t\t", "structData", "data"), g.Name))
 	}
+}
+
+func (g *GoStructField) writeSizeCalc(sb *strings.Builder) {
+	sb.WriteString(fmt.Sprintf(`
+	if %v {
+		var entrySize = 0
+%v
+		size += entrySize
+	}
+`,
+		g.Type.EntryIsNotEmpty("s."+g.Name),
+		g.Type.EntryFullSizeWithTag("\t\t", "entrySize", "s."+g.Name, g.wireTypeConstName())))
 }
 
 func (g *GoStructField) writeMarshal(sb *strings.Builder) {

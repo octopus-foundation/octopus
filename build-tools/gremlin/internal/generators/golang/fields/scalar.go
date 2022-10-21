@@ -300,3 +300,43 @@ func (t *goBasicValueType) JsonStructCanBeUsedDirectly() bool {
 func (t *goBasicValueType) EntryCopy(tabs string, targetVar string, srcVar string) string {
 	return formatting.AddTabs(fmt.Sprintf(`%v = %v`, targetVar, srcVar), tabs)
 }
+
+var bufBasicTypesSizers = map[string]string{
+	"string":   "SizeString",
+	"bytes":    "SizeBytes",
+	"bool":     "SizeBool",
+	"double":   "SizeFloat64",
+	"float":    "SizeFloat32",
+	"int32":    "SizeInt32",
+	"int64":    "SizeInt64",
+	"uint32":   "SizeUint32",
+	"uint64":   "SizeUint64",
+	"sint32":   "SizeSInt32",
+	"sint64":   "SizeSInt64",
+	"fixed32":  "SizeFixed32",
+	"fixed64":  "SizeFixed64",
+	"sfixed32": "SizeSFixed32",
+	"sfixed64": "SizeSFixed64",
+}
+
+func (t *goBasicValueType) EntryFullSizeWithTag(tabs string, sizeVarName string, fieldName string, fieldTag string) string {
+	if t.ProtoType == "bytes" || t.ProtoType == "string" {
+		return formatting.AddTabs(fmt.Sprintf(`%v = gremlin.%v(%v)
+%v += gremlin.SizeUint64(uint64(%v)) + gremlin.SizeTag(%v)`, sizeVarName, bufBasicTypesSizers[t.ProtoType], fieldName, sizeVarName, sizeVarName, fieldTag), tabs)
+	} else {
+		return formatting.AddTabs(fmt.Sprintf(
+			"%v = gremlin.SizeTag(%v) + gremlin.%v(%v)", sizeVarName, fieldTag, bufBasicTypesSizers[t.ProtoType], fieldName),
+			tabs)
+	}
+}
+
+func (t *goBasicValueType) EntryFullSizeWithoutTag(tabs string, sizeVarName string, fieldName string) string {
+	if t.ProtoType == "bytes" || t.ProtoType == "string" {
+		return formatting.AddTabs(fmt.Sprintf(`%v = gremlin.%v(%v)
+%v += gremlin.SizeUint64(uint64(%v))`, sizeVarName, bufBasicTypesSizers[t.ProtoType], fieldName, sizeVarName, sizeVarName), tabs)
+	} else {
+		return formatting.AddTabs(fmt.Sprintf(
+			"%v = gremlin.%v(%v)", sizeVarName, bufBasicTypesSizers[t.ProtoType], fieldName),
+			tabs)
+	}
+}

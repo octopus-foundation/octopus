@@ -116,17 +116,44 @@ func (t *goMapValueType) EntryIsNotEmpty(localVarName string) string {
 	return fmt.Sprintf(`len(%v) > 0`, localVarName)
 }
 
+func (t *goMapValueType) EntryFullSizeWithTag(tabs string, sizeVarName string, fieldName string, fieldTag string) string {
+	return formatting.AddTabs(fmt.Sprintf(`%v = 0
+for k, v := range %v {
+	var keySize, valueSize int
+%v
+%v
+	var mapEntrySize = keySize + valueSize
+	%v += mapEntrySize + gremlin.SizeTag(%v) + gremlin.SizeUint64(uint64(mapEntrySize))
+}
+`,
+		sizeVarName, fieldName,
+		t.KeyType.EntryFullSizeWithTag("\t", "keySize", "k", "1"),
+		t.ValueType.EntryFullSizeWithTag("\t", "valueSize", "v", "1"),
+		sizeVarName, fieldTag,
+	), tabs)
+}
+
+func (t *goMapValueType) EntryFullSizeWithoutTag(string, string, string) string {
+	log.Panicf("EntryFullSizeWithoutTag should not be called on a map value type")
+	return ""
+}
+
 func (t *goMapValueType) EntryWriter(tabs string, targetBuffer string, tag string, varName string) string {
 	return formatting.AddTabs(fmt.Sprintf(`for k, v := range %v {
-	var mapEntry = gremlin.NewLazyBuffer(nil)
+	var keySize, valueSize int
 %v
 %v
-	%v.AppendBytes(%v, mapEntry.Bytes())
+	mapEntrySize := keySize + valueSize
+	%v.AppendBytesTag(%v, mapEntrySize)
+%v
+%v
 }`,
 		varName,
-		t.KeyType.EntryWriter("\t", "mapEntry", "1", "k"),
-		t.ValueType.EntryWriter("\t", "mapEntry", "2", "v"),
+		t.KeyType.EntryFullSizeWithTag("\t", "keySize", "k", "1"),
+		t.ValueType.EntryFullSizeWithTag("\t", "valueSize", "v", "2"),
 		targetBuffer, tag,
+		t.KeyType.EntryWriter("\t", targetBuffer, "1", "k"),
+		t.ValueType.EntryWriter("\t", targetBuffer, "2", "v"),
 	), tabs)
 }
 

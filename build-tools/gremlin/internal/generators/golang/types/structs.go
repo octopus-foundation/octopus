@@ -90,6 +90,7 @@ func (g *GoStructType) GenerateCode(sb *strings.Builder) {
 	g.writeStruct(sb)
 	g.writeMarshal(sb)
 	g.writeCopy(sb)
+	g.writeSize(sb)
 }
 
 func (g *GoStructType) writeWireTypes(sb *strings.Builder) {
@@ -111,8 +112,7 @@ func New%vReader() *%vReader {
 func (g *GoStructType) writeReaderStruct(sb *strings.Builder) {
 	sb.WriteString(fmt.Sprintf(`
 type %vReader struct {
-	buf *gremlin.LazyBuffer
-	modified bool
+	buf *gremlin.Reader
 `, g.StructName))
 
 	for _, field := range g.Fields {
@@ -140,16 +140,28 @@ func (g *GoStructType) writeFieldsAccessors(sb *strings.Builder) {
 func (g *GoStructType) writeUnmarshal(sb *strings.Builder) {
 	sb.WriteString(fmt.Sprintf(`
 func (m *%vReader) Unmarshal(data []byte) error {
-	m.buf = gremlin.NewLazyBuffer(data)
-	return m.buf.GetAllFields(func(tag gremlin.ProtoWireNumber, wire gremlin.ProtoWireType, offset int) error {
+	m.buf = gremlin.NewReader(data)
+	offset := 0
+	for m.buf.HasNext(offset, 0) {
+		tag, wire, tagSize, err := m.buf.ReadTagAt(offset)
+		if err != nil {
+			return err
+		}
+
+		offset += tagSize
 		switch tag {`, g.StructName))
 	for _, field := range g.Fields {
 		field.writeUnmarshal(sb)
 	}
 	sb.WriteString(`
 		}
-		return nil
-	})
+
+		offset, err = m.buf.SkipData(offset, wire)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 `)
 }
@@ -177,13 +189,43 @@ func (s *%v) Marshal() []byte {
 	if s == nil {
 		return nil
 	}
-	res := gremlin.NewLazyBuffer(nil)
-`, g.StructName))
+	size := s.XXX_PbContentSize()
+	if size == 0 {
+		return nil
+	}
+	res := gremlin.NewWriter(size)
+	s.MarshalTo(res)
+	return res.Bytes()
+}
+
+func (s *%v) MarshalTo(res *gremlin.Writer) {
+	if s == nil {
+		return
+	}
+`, g.StructName, g.StructName))
+
 	for _, field := range g.Fields {
 		field.writeMarshal(sb)
 	}
 	sb.WriteString(`
-	return res.Bytes()
+}
+`)
+}
+
+func (g *GoStructType) writeSize(sb *strings.Builder) {
+	sb.WriteString(fmt.Sprintf(`
+func (s *%v) XXX_PbContentSize() int {
+	if s == nil {
+		return 0
+	}
+	var size = 0
+`, g.StructName))
+
+	for _, field := range g.Fields {
+		field.writeSizeCalc(sb)
+	}
+	sb.WriteString(`
+	return size
 }
 `)
 }

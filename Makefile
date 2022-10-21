@@ -3,3 +3,6 @@ protobuf:
 
 checks:
 	go vet -mod=vendor ./...
+
+tests:
+	go test -failfast ./...

@@ -133,6 +133,14 @@ func (e *goEnumValueType) EntryCopy(tabs string, targetVar string, srcVar string
 	return formatting.AddTabs(fmt.Sprintf(`%v = %v`, targetVar, srcVar), tabs)
 }
 
+func (e *goEnumValueType) EntryFullSizeWithTag(tabs string, sizeVarName string, fieldName string, fieldTag string) string {
+	return formatting.AddTabs(fmt.Sprintf(`%v = gremlin.SizeTag(%v) + gremlin.SizeInt32(int32(%v))`, sizeVarName, fieldTag, fieldName), tabs)
+}
+
+func (e *goEnumValueType) EntryFullSizeWithoutTag(tabs string, sizeVarName string, fieldName string) string {
+	return formatting.AddTabs(fmt.Sprintf(`%v = gremlin.SizeInt32(int32(%v))`, sizeVarName, fieldName), tabs)
+}
+
 func (e *goEnumValueType) EntryWriter(tabs string, targetBuffer string, tag string, varName string) string {
 	return formatting.AddTabs(fmt.Sprintf(`%v.AppendInt32(%v, int32(%v))`, targetBuffer, tag, varName), tabs)
 }

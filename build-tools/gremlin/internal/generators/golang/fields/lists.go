@@ -57,45 +57,11 @@ func (t *goRepeatedValueType) EntrySizedReader(string, string) string {
 }
 
 func (t *goRepeatedValueType) EntryUnmarshalSaveOffsets(tabs string, fieldName string) string {
-	var res string
-	if t.RepeatedType.CanBePacked() {
-		res = fmt.Sprintf(`m.offset%v = append(m.offset%v, offset)
-m.wireType%v = append(m.wireType%v, wire)`, fieldName, fieldName, fieldName, fieldName)
-	} else {
-		res = fmt.Sprintf(`m.offset%v = append(m.offset%v, offset)`, fieldName, fieldName)
-	}
-	return formatting.AddTabs(res, tabs)
+	return formatting.AddTabs(fmt.Sprintf(`m.offset%v = append(m.offset%v, offset)`, fieldName, fieldName), tabs)
 }
 
 func (t *goRepeatedValueType) EntryReader(tabs string, localVarName string) string {
-	var res string
-	if t.RepeatedType.CanBePacked() {
-		res = fmt.Sprintf(`
-var %v %v
-for i := 0; i < len(wOffset); i++ {
-	wOffset := wOffset[i]
-	wType := wType[i]
-	if wType == gremlin.BytesType {
-		size, sizeSize := m.buf.SizedReadVarInt(wOffset)
-		offset := 0
-		for offset < int(size) {
-			wOffset := wOffset + sizeSize + offset
-%v
-			%v = append(%v, listEntry)
-			offset += listEntrySize
-		}
-	} else {
-%v
-		%v = append(%v, listEntry)
-	}
-}
-`, localVarName, t.ReaderTypeName(),
-			t.RepeatedType.EntrySizedReader("\t\t\t", "listEntry"),
-			localVarName, localVarName,
-			t.RepeatedType.EntryReader("\t\t", "listEntry"),
-			localVarName, localVarName)
-	} else {
-		res = fmt.Sprintf(`
+	var res = fmt.Sprintf(`
 var %v %v
 for i := 0; i < len(wOffset); i++ {
 	wOffset := wOffset[i]
@@ -103,9 +69,8 @@ for i := 0; i < len(wOffset); i++ {
 	%v = append(%v, listEntry)
 }
 `, localVarName, t.ReaderTypeName(),
-			t.RepeatedType.EntryReader("\t", "listEntry"),
-			localVarName, localVarName)
-	}
+		t.RepeatedType.EntryReader("\t", "listEntry"),
+		localVarName, localVarName)
 
 	return formatting.AddTabs(res, tabs)
 }
@@ -127,28 +92,25 @@ func (t *goRepeatedValueType) EntryIsNotEmpty(localVarName string) string {
 	return fmt.Sprintf(`len(%v) > 0`, localVarName)
 }
 
-func (t *goRepeatedValueType) EntryWriter(tabs string, targetBuffer string, tag string, varName string) string {
-	if t.RepeatedType.CanBePacked() {
-		return formatting.AddTabs(t.packedEntryWriter(targetBuffer, tag, varName), tabs)
-	} else {
-		return formatting.AddTabs(fmt.Sprintf(`for _, entry := range %v {
+func (t *goRepeatedValueType) EntryFullSizeWithTag(tabs string, sizeVarName string, fieldName string, fieldTag string) string {
+	return formatting.AddTabs(fmt.Sprintf(`%v = 0
+for _, val := range %v {
+	var listEntrySize int
 %v
-}`, varName, t.RepeatedType.EntryWriter("\t", targetBuffer, tag, "entry")), tabs)
-	}
+	%v += listEntrySize
+}`, sizeVarName, fieldName, t.RepeatedType.EntryFullSizeWithTag("\t", "listEntrySize", "val", fieldTag),
+		sizeVarName), tabs)
 }
 
-func (t *goRepeatedValueType) packedEntryWriter(targetBuffer string, tag string, name string) string {
-	return fmt.Sprintf(`if len(%v) > 1 {
-	var packed = gremlin.NewLazyBuffer(nil)
-	for _, entry := range %v {
+func (t *goRepeatedValueType) EntryFullSizeWithoutTag(string, string, string) string {
+	log.Panicf("EntryFullSizeWithoutTag should not be called on a repeated value type")
+	return ""
+}
+
+func (t *goRepeatedValueType) EntryWriter(tabs string, targetBuffer string, tag string, varName string) string {
+	return formatting.AddTabs(fmt.Sprintf(`for _, entry := range %v {
 %v
-	}
-	%v.AppendBytes(%v, packed.Bytes())
-} else if len(%v) == 1 {
-%v
-}`, name, name, t.RepeatedType.PackedEntryWriter("\t\t", "packed", "entry"),
-		targetBuffer, tag,
-		name, t.RepeatedType.EntryWriter("\t", targetBuffer, tag, name+"[0]"))
+}`, varName, t.RepeatedType.EntryWriter("\t", targetBuffer, tag, "entry")), tabs)
 }
 
 func (t *goRepeatedValueType) PackedEntryWriter(string, string, string) string {

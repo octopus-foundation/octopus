@@ -134,9 +134,22 @@ func (t *goStructValueType) EntryIsNotEmpty(localVarName string) string {
 	return fmt.Sprintf(`%v != nil`, localVarName)
 }
 
+func (t *goStructValueType) EntryFullSizeWithTag(tabs string, sizeVarName string, fieldName string, fieldTag string) string {
+	return formatting.AddTabs(fmt.Sprintf(`%v = %v.XXX_PbContentSize()
+%v += gremlin.SizeUint64(uint64(%v)) + gremlin.SizeTag(%v)
+`, sizeVarName, fieldName, sizeVarName, sizeVarName, fieldTag), tabs)
+}
+
+func (t *goStructValueType) EntryFullSizeWithoutTag(tabs string, sizeVarName string, fieldName string) string {
+	return formatting.AddTabs(fmt.Sprintf(`%v = %v.XXX_PbContentSize()
+%v += gremlin.SizeUint64(uint64(%v))
+`, sizeVarName, fieldName, sizeVarName, sizeVarName), tabs)
+}
+
 func (t *goStructValueType) EntryWriter(tabs string, targetBuffer string, tag string, varName string) string {
-	return formatting.AddTabs(fmt.Sprintf(`var msgBytes = %v.Marshal()
-%v.AppendBytes(%v, msgBytes)`, varName, targetBuffer, tag), tabs)
+	return formatting.AddTabs(fmt.Sprintf(`structSize := %v.XXX_PbContentSize()
+%v.AppendBytesTag(%v, structSize)
+%v.MarshalTo(%v)`, varName, targetBuffer, tag, varName, targetBuffer), tabs)
 }
 
 func (t *goStructValueType) PackedEntryWriter(string, string, string) string {

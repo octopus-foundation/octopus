@@ -123,7 +123,7 @@ func (e %v) String() string {
 	var usedValues = map[int]struct{}{} // enum can contains duplicate indexes
 	for _, v := range g.Values {
 		if _, used := usedValues[v.Value]; !used {
-			sb.WriteString(fmt.Sprintf("\tcase %v:\n\t\treturn %q\n", v.ConstName, v.ConstName))
+			sb.WriteString(fmt.Sprintf("\tcase %v:\n\t\treturn %q\n", v.ConstName, v.Proto.Name.ProtoName()))
 			usedValues[v.Value] = struct{}{}
 		}
 	}

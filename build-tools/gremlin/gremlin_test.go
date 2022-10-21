@@ -24,6 +24,7 @@ import (
 	"octopus/target/generated-sources/protobuf/gremlin/map_test"
 	"octopus/target/generated-sources/protobuf/gremlin/protobuf_unittest"
 	"octopus/target/generated-sources/protobuf/gremlin/protobuf_unittest_import"
+	"octopus/target/generated-sources/protobuf/gremlin/test"
 	"testing"
 )
 
@@ -793,5 +794,99 @@ func TestChildMsg(t *testing.T) {
 	t.Logf("got bb: %v", parsed.GetOptionalNestedMessage().GetBb())
 	if parsed.GetOptionalNestedMessage().GetBb() != 118 {
 		t.Errorf("Expected 118, got %d", parsed.GetOptionalNestedMessage().GetBb())
+	}
+}
+
+func TestBasicRW2(t *testing.T) {
+	msg := &protobuf_unittest.TestAllTypes_NestedMessage{
+		Bb: 118,
+	}
+
+	content := msg.Marshal()
+	//[146 1 2 8 118]
+	t.Logf("Content: %v Size %v", content, msg.XXX_PbContentSize())
+
+	parsed := protobuf_unittest.NewTestAllTypes_NestedMessageReader()
+	if err := parsed.Unmarshal(content); err != nil {
+		t.Errorf("Failed to parse: %v", err)
+	}
+
+	if parsed.GetBb() != msg.Bb {
+		t.Fatalf("Expected %v, got %v", msg.Bb, parsed.GetBb())
+	}
+}
+
+func TestBasicValues(t *testing.T) {
+	msg := &test.NidOptNative{
+		Field1:  1,
+		Field2:  2,
+		Field3:  3,
+		Field4:  4,
+		Field5:  5,
+		Field6:  6,
+		Field7:  7,
+		Field8:  8,
+		Field9:  9,
+		Field10: 10,
+		Field11: 11,
+		Field12: 12,
+		Field13: true,
+		Field14: "13",
+		Field15: []byte("14"),
+	}
+	data := msg.Marshal()
+	size := msg.XXX_PbContentSize()
+	if len(data) != size {
+		t.Fatalf("Expected %v, got %v", size, len(data))
+	}
+
+	parsed := test.NewNidOptNativeReader()
+	if err := parsed.Unmarshal(data); err != nil {
+		t.Fatalf("Failed to parse: %v", err)
+	}
+	if parsed.GetField1() != msg.Field1 {
+		t.Fatalf("Expected %v, got %v", msg.Field1, parsed.GetField1())
+	}
+	if parsed.GetField2() != msg.Field2 {
+		t.Fatalf("Expected %v, got %v", msg.Field2, parsed.GetField2())
+	}
+	if parsed.GetField3() != msg.Field3 {
+		t.Fatalf("Expected %v, got %v", msg.Field3, parsed.GetField3())
+	}
+	if parsed.GetField4() != msg.Field4 {
+		t.Fatalf("Expected %v, got %v", msg.Field4, parsed.GetField4())
+	}
+	if parsed.GetField5() != msg.Field5 {
+		t.Fatalf("Expected %v, got %v", msg.Field5, parsed.GetField5())
+	}
+	if parsed.GetField6() != msg.Field6 {
+		t.Fatalf("Expected %v, got %v", msg.Field6, parsed.GetField6())
+	}
+	if parsed.GetField7() != msg.Field7 {
+		t.Fatalf("Expected %v, got %v", msg.Field7, parsed.GetField7())
+	}
+	if parsed.GetField8() != msg.Field8 {
+		t.Fatalf("Expected %v, got %v", msg.Field8, parsed.GetField8())
+	}
+	if parsed.GetField9() != msg.Field9 {
+		t.Fatalf("Expected %v, got %v", msg.Field9, parsed.GetField9())
+	}
+	if parsed.GetField10() != msg.Field10 {
+		t.Fatalf("Expected %v, got %v", msg.Field10, parsed.GetField10())
+	}
+	if parsed.GetField11() != msg.Field11 {
+		t.Fatalf("Expected %v, got %v", msg.Field11, parsed.GetField11())
+	}
+	if parsed.GetField12() != msg.Field12 {
+		t.Fatalf("Expected %v, got %v", msg.Field12, parsed.GetField12())
+	}
+	if parsed.GetField13() != msg.Field13 {
+		t.Fatalf("Expected %v, got %v", msg.Field13, parsed.GetField13())
+	}
+	if parsed.GetField14() != msg.Field14 {
+		t.Fatalf("Expected %v, got %v", msg.Field14, parsed.GetField14())
+	}
+	if !bytes.Equal(parsed.GetField15(), msg.Field15) {
+		t.Fatalf("Expected %v, got %v", msg.Field15, parsed.GetField15())
 	}
 }
