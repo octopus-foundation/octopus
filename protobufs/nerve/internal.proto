@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+// this enum used to determine type of the message in nerve
+enum NerveSourceType {
+  NST_TEST = 0;
+}

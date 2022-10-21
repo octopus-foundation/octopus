@@ -1,0 +1,14 @@
+- name: ensure database directory for {{ database_name }} exists
+  file: path=/opt/db-{{ database_name }}/ state=directory
+- name: create database description file
+  template:
+    src: docker-compose.yml
+    dest: /opt/db-{{ database_name }}/docker-compose.yml
+- name: create database config
+  template:
+    src: mysql.cnf
+    dest: /opt/db-{{ database_name }}/mysql.cnf
+- name: ensure docker-compose started
+  shell: |
+    cd /opt/db-{{ database_name }}/
+    docker-compose up -d

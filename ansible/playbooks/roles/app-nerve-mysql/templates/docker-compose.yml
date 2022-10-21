@@ -1,0 +1,18 @@
+version: '2'
+services:
+  mysql:
+    image: circleci/mysql:{{ database_mysql_version }}
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: '{{ database_allow_empty_password }}'
+      MYSQL_ROOT_PASSWORD: '{{ database_password }}'
+      MYSQL_DATABASE: '{{ database_name }}'
+      MYSQL_TCP_PORT: "{{ database_port | default('3306') }}"
+    restart: 'always'
+    volumes:
+      - "./db:/var/lib/mysql"
+      - "./mysql.cnf:/etc/mysql/conf.d/nerve.cnf"
+    ports:
+      - "127.0.0.1:{{ database_port | default('3306') }}:{{ database_port | default('3306') }}"
+    expose:
+      - "{{ database_port | default('3306') }}"
+    command: mysqld {{ mysql_params }}

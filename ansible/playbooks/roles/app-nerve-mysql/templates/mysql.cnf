@@ -1,0 +1,31 @@
+[mysqld]
+default_authentication_plugin = mysql_native_password
+log-bin = binlog
+binlog_expire_logs_seconds = 86400
+binlog_format = MIXED
+skip-slave-start
+
+innodb_read_io_threads = 64
+innodb_write_io_threads = 64
+
+innodb_buffer_pool_instances = 16
+innodb_buffer_pool_size = 16G
+innodb_log_file_size = 512M
+innodb_flush_method = O_DIRECT
+innodb_sort_buffer_size = 16M
+innodb_adaptive_hash_index_parts = 32
+innodb_adaptive_hash_index = off
+innodb_adaptive_flushing = off
+innodb_io_capacity = 20000
+innodb_io_capacity_max = 20000
+innodb_concurrency_tickets = 20000
+
+sort_buffer_size = 16M
+join_buffer_size = 16777216
+
+max_connections = 1024
+max_allowed_packet = 10194176
+max_execution_time = 60000
+
+innodb_monitor_enable = all
+innodb_flush_log_at_trx_commit=2
