@@ -11,8 +11,11 @@ Test environment:
 - M1 Max MacBook Pro 2021
 - mysql 8.0.31 with following config https://github.com/octopus-foundation/octopus/blob/main/ansible/playbooks/roles/app-nerve-mysql/templates/mysql.cnf
 
-Write speed: around ~490 000 messages per second
-Read speed: around ~650 000 messages per second
+| Action  | Messages/second |
+|---------|-----------------|
+| Writing | 490 000         |
+| Reading | 650 000         |
+
 
 Benchmarks:
 - https://github.com/octopus-foundation/octopus/blob/main/parts/tools/bin/synapse-bench/synapse-bench.go
