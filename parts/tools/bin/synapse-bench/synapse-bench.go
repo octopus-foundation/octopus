@@ -4,7 +4,6 @@ import (
 	"flag"
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
-	_ "net/http/pprof"
 	"octopus/shared/nerve"
 	"os"
 	"sync/atomic"
