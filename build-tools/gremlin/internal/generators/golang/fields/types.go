@@ -51,15 +51,18 @@ func resolveScalarType(targetFile GoEntitiesProvider, field *types.MessageFieldD
 	baseType := &goBasicValueType{
 		Name:      typeName,
 		ProtoType: field.ScalarValueType,
+		Required:  field.Required,
 	}
 	if field.Repeated {
 		if baseType.CanBePacked() {
 			return &goRepeatedPackedValueType{
 				RepeatedType: baseType,
+				Required:     field.Required,
 			}, nil
 		} else {
 			return &goRepeatedValueType{
 				RepeatedType: baseType,
+				Required:     field.Required,
 			}, nil
 		}
 	} else if field.Map {
@@ -111,11 +114,13 @@ func resolveEnumType(targetFile GoEntitiesProvider, field *types.MessageFieldDef
 
 	valueType := &goEnumValueType{
 		EnumName: enumPackage + enumType.GetName(),
+		Required: field.Required,
 	}
 
 	if field.Repeated {
 		return &goRepeatedValueType{
 			RepeatedType: valueType,
+			Required:     field.Required,
 		}, nil
 	} else if field.Map {
 		basicKeyType, err := resolveMapKeyType(field)
@@ -148,11 +153,13 @@ func resolveMsgType(targetFile GoEntitiesProvider, field *types.MessageFieldDefi
 	valueType := &goStructValueType{
 		StructPackage: msgPackage,
 		StructName:    msgType.GetName(),
+		Required:      field.Required,
 	}
 
 	if field.Repeated {
 		return &goRepeatedValueType{
 			RepeatedType: valueType,
+			Required:     field.Required,
 		}, nil
 	} else if field.Map {
 		basicKeyType, err := resolveMapKeyType(field)

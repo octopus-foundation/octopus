@@ -20,14 +20,16 @@ package nerve
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"octopus/shared/unidb"
 	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	"octopus/shared/unidb"
 )
 
 type SMysqlBackendConfig struct {
@@ -58,6 +60,22 @@ type SMysqlBackend struct {
 	rpsTimerRead   time.Time
 }
 
+func GetMySQLBackendForQueue(queueName QueueConfig, host string) (SynapseBackend, error) {
+	backendConfig, exists := queueName.Hosts[host]
+	if !exists {
+		return nil, fmt.Errorf("no host %s defined for queue %s", host, queueName.Name)
+	}
+
+	return NewSMysqlBackend(SMysqlBackendConfig{
+		Host:                host,
+		Port:                backendConfig.Port,
+		DbName:              backendConfig.DbName,
+		TableParallelism:    backendConfig.TableParallelism,
+		PointersParallelism: backendConfig.PointersParallelism,
+		MaxRPSPerThread:     backendConfig.MaxRPSPerThread,
+	})
+}
+
 func NewSMysqlBackend(config SMysqlBackendConfig) (*SMysqlBackend, error) {
 	cfg := unidb.NewUniDB().
 		WithHost(config.Host).
@@ -72,13 +90,14 @@ func NewSMysqlBackend(config SMysqlBackendConfig) (*SMysqlBackend, error) {
 
 	db, err := cfg.Connect()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed connect to database %s on %s: %w", config.DbName, config.Host, err)
 	}
 
 	// let's create databases
-	_, err = db.GetRawDB().Exec(fmt.Sprintf("create database if not exists %s", config.DbName))
+	// WTF: unreachable code: getting `Unknown database` error on cfg.Connect()
+	_, err = db.GetRawDB().Exec(fmt.Sprintf("create database if not exists `%s`", config.DbName))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create database %s: %w", config.DbName, err)
 	}
 
 	// let's find out what tables to we have here...

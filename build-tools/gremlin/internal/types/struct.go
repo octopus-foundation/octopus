@@ -90,6 +90,7 @@ type MessageFieldDefinition struct {
 	Map        bool
 	OneOfGroup string
 	MapKeyType string
+	Required   bool
 
 	ScalarValueType string
 
@@ -122,6 +123,7 @@ func (m *MessageFieldDefinition) Copy() *MessageFieldDefinition {
 		LocalMsgType:     m.LocalMsgType,
 		ProtoDef:         m.ProtoDef,
 		DefaultValue:     m.DefaultValue,
+		Required:         m.Required,
 	}
 
 	if m.ExtraScopes != nil {

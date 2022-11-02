@@ -45,6 +45,7 @@ type goBasicValueType struct {
 	Name         string
 	ProtoType    string
 	DefaultValue string
+	Required     bool
 }
 
 func (t *goBasicValueType) ReaderTypeName() string {
@@ -223,6 +224,9 @@ func (t *goBasicValueType) ToStruct(tabs string, targetVar string, readerField s
 }
 
 func (t *goBasicValueType) EntryIsNotEmpty(localVarName string) string {
+	if t.Required {
+		return "true"
+	}
 	switch t.ReaderTypeName() {
 	case "[]byte":
 		if t.DefaultValue == "" {

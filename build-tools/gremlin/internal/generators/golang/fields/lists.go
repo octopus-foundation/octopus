@@ -26,6 +26,7 @@ import (
 
 type goRepeatedValueType struct {
 	RepeatedType core.GoFieldType
+	Required     bool
 }
 
 func (t *goRepeatedValueType) ReaderTypeName() string {
@@ -89,6 +90,9 @@ func (t *goRepeatedValueType) ToStruct(tabs string, targetVar string, readerFiel
 }
 
 func (t *goRepeatedValueType) EntryIsNotEmpty(localVarName string) string {
+	if t.Required {
+		return "true"
+	}
 	return fmt.Sprintf(`len(%v) > 0`, localVarName)
 }
 

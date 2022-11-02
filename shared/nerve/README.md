@@ -1,7 +1,7 @@
 # Nerve queues
 https://github.com/octopus-foundation/octopus/tree/main/shared/nerve
 
-Nerve is a fast, persistent, infinite, sequential data storage on the existing infrastructure (currently - mysql + b2 with possibility to add any other databases)
+Nerve is a fast, persistent, infinite, sequential data storage facility within the existing infrastructure (currently - MySQL + b2 with the capacity to add any other databases)
 
 [toc]
 
@@ -9,7 +9,7 @@ Nerve is a fast, persistent, infinite, sequential data storage on the existing i
 
 Test environment:
 - M1 Max MacBook Pro 2021
-- mysql 8.0.31 with following config https://github.com/octopus-foundation/octopus/blob/main/ansible/playbooks/roles/app-nerve-mysql/templates/mysql.cnf
+- MySQL 8.0.31 with the following config https://github.com/octopus-foundation/octopus/blob/main/ansible/playbooks/roles/app-nerve-mysql/templates/mysql.cnf
 
 | Action  | Messages/second |
 |---------|-----------------|
@@ -23,9 +23,9 @@ Benchmarks:
 
 # Usage
 
-## Queues definition
+## Queue definition
 
-First, you need to define your queue and backend, the code is the best place to define your queue:
+First, you need to define your queue and backend, within the code is the best place to define your queue:
 ```go
 package nerve
 
@@ -45,13 +45,13 @@ var NQLocalTest = QueueConfig{
 
 In this config we specified the following:
 - your queue id is `NQLocalTest`
-- queue will be used only on local mysql server "127.0.0.1" (you can use one queue on multiple servers with different configs)
+- queue will be used only on the local MySQL server `127.0.0.1` (you can use one queue on multiple servers with different configs)
 - queue will be stored in the database named `nerve`
 - queue will use 4 shard tables to store queue entries
 - there should be no more than 50 queries per thread per second
 
 *Important*:
-Make sure that you are using fine-tuned mysql with a config like this:
+Make sure that you are using fine-tuned MySQL with a config like this:
 https://github.com/octopus-foundation/octopus/blob/main/ansible/playbooks/roles/app-nerve-mysql/templates/mysql.cnf
 
 ## Queue publishing
@@ -79,18 +79,18 @@ if err != nil {
 
 We have the following queue publishing methods in synapse:
 - `SendPack` - for batch sending
-- `SendProtoPack` - for protobuf-encoded packets sending
+- `SendProtoPack` - for protobuf-encoded packet sending
 - `SendSourcedPack` - for `nerve.NerveSourcedPacket` sending - packet with extra metadata (source type, source id)
-- `Send` - for single packet sending, not so fast as batch sending
+- `Send` - for single packet sending, not as fast as batch sending
 
 *Important*:
-- we don't use transactions for packet writing, so it's impossible to rollback anything
-- you should always have only ONE publisher per queue, for sequence maintaining
+- we don't use transactions for packet writing, so it's impossible to roll anything back
+- you should only ever have ONE publisher per queue, to maintain the sequence
 - you should never change queue parallelism on-the-fly
 
-If you want to use `nerve` as eventbus with mysql, the following architecture is recommended:
+If you want to use `nerve` as eventbus with MySQL, the following architecture is recommended:
 - use `proxy` table for publishing events in transaction from your application
-- create app which will read the events from `proxy` table and publish them to the nerve queue
+- create an app that will read the events from `proxy` table and publish them to the nerve queue
 
 In this case:
 - you will have only one publisher for a queue
@@ -98,14 +98,14 @@ In this case:
 
 ## Queue reading
 
-To read the data you should define unique consumer in your code near the queue definition:
+To read the data you should define a unique consumer in your code near the queue definition:
 ```go
 const (
 	NCTest ConsumerId = "NerveConsumerId_Test"
 )
 ```
 
-And after that you can read your data:
+After that you can read your data:
 
 ```go
 backend, err := nerve.GetMySQLBackendForQueue(nerve.NQLocalTest, "127.0.0.1")
@@ -128,8 +128,7 @@ for msg := range receiver.DataChan {
 
 # MySQL backend
 
-Nerve mysql backend efficiently uses InnoDB engine with sharding for storing data.
-For the abovementioned example , we have the following mysql tables:
+Nerve MySQL backend efficiently uses the InnoDB engine with sharding for storing data. For the example above we have the following MySQL tables:
 ```
 mysql> show tables;
 +-------------------------------------+
@@ -165,22 +164,22 @@ mysql> select * from queue_NQLocalTest_004_0000_pointers;
 
 ## Writing
 
-When nerve gets a packet (or a batch of packets) for writing, it will:
+When nerve receives a packet (or a batch of packets) for writing, it will:
 - find a queue running channel (based on queue id)
 - add a packet to this channel
 - wait for write confirmation
 
 Queue worker will:
-- get last pointer from  backend on start
-- read the new packet for writing from the channel:
+- get the last pointer from the backend on start
+- read the new packet for writing from the channel
 - find a shard channel based on `DbId % TableParallelism`
 - add a packet to this shard channel
 
 Shard worker, in its turn, will react to the packet and do the following:
 - add it to the buffer
 - if we can write (`MaxRPS`-restricted for best io performance):
-    - write the buffer to mysql table shard
-    - `ack` all messages in the buffer
+  - write the buffer to the MySQL table shard
+  - `ack` all messages in the buffer
 
 Queue ack manager worker, after getting `ack` of the packet from the channel, will take the following actions:
 - add ack-ed id to the buffer
@@ -190,15 +189,14 @@ Queue ack manager worker, after getting `ack` of the packet from the channel, wi
 
 ## Reading
 
-Synapse receiver on start reads the latest consumed pointer
-After that in forever loop it will:
-- read last "writer" pointer
-- read data from backend in range between reader pointer and writer pointer (with backend limitations)
-- send this data to reader channel one-by-one, ordered by DbId
+On start, the synapse receiver reads the latest consumed pointer. After that, in a continuous loop it will:
+- read the last "writer" pointer
+- read data from the backend in the range between the reader pointer and writer pointer (with backend limitations)
+- send this data to the reader channel one-by-one, ordered by `DbId`
 
 What about ack? It's simple and works in exactly the same way as for writing:
 - add ack-ed id to the buffer
 - find max sequential number of the ack-ed buffer
 - update database pointer
 
-So if you process messages in random order - ack manager will wait for Ack ids to be sequential.
+So, if you process messages in a random order – the ack manager will wait for ack ids to be sequential.

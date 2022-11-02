@@ -19,8 +19,9 @@
 package nerve
 
 import (
-	"github.com/rs/zerolog"
 	"sync"
+
+	"github.com/rs/zerolog"
 )
 
 type BackendConfig struct {

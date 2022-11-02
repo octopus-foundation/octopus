@@ -181,6 +181,7 @@ func extractField(name types.ScopedName, v *proto.NormalField) *types.MessageFie
 		ProtoDef:     v.Field,
 		Repeated:     v.Repeated,
 		DefaultValue: extractDefaultValue(v.Field),
+		Required:     v.Required,
 	}
 
 	if _, isScalar := types.ProtobufScalarTypes[v.Type]; isScalar {

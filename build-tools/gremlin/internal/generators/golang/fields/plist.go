@@ -26,6 +26,7 @@ import (
 
 type goRepeatedPackedValueType struct {
 	RepeatedType core.GoFieldType
+	Required     bool
 }
 
 func (t *goRepeatedPackedValueType) ReaderTypeName() string {
@@ -106,6 +107,9 @@ func (t *goRepeatedPackedValueType) ToStruct(tabs string, targetVar string, read
 }
 
 func (t *goRepeatedPackedValueType) EntryIsNotEmpty(localVarName string) string {
+	if t.Required {
+		return "true"
+	}
 	return fmt.Sprintf(`len(%v) > 0`, localVarName)
 }
 

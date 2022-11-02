@@ -26,6 +26,7 @@ import (
 type goStructValueType struct {
 	StructPackage string
 	StructName    string
+	Required      bool
 }
 
 func (t *goStructValueType) ReaderTypeName() string {
@@ -131,6 +132,9 @@ func (t *goStructValueType) ToStruct(tabs string, targetVar string, readerField 
 }
 
 func (t *goStructValueType) EntryIsNotEmpty(localVarName string) string {
+	if t.Required {
+		return "true"
+	}
 	return fmt.Sprintf(`%v != nil`, localVarName)
 }
 

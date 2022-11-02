@@ -3,7 +3,7 @@ syntax = "proto3";
 import "internal.proto";
 
 message NerveSourcedPacket {
-  NerveSourceType source   = 1;
+  NerveSourceType source = 1;
   uint64     sourceId = 2;
 
   bytes      packet   = 10;

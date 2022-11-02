@@ -27,6 +27,7 @@ import (
 type goEnumValueType struct {
 	EnumName     string
 	DefaultValue string
+	Required     bool
 }
 
 func (e *goEnumValueType) ReaderTypeName() string {
@@ -122,6 +123,9 @@ func (e *goEnumValueType) ToStruct(tabs string, targetVar string, readerField st
 }
 
 func (e *goEnumValueType) EntryIsNotEmpty(localVarName string) string {
+	if e.Required {
+		return "true"
+	}
 	var defaultValue = e.DefaultValue
 	if defaultValue == "" {
 		defaultValue = "0"
