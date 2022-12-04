@@ -1,6 +1,9 @@
 protobuf:
 	go run -mod vendor build-tools/gremlin/gremlin.go
 
+configs:
+	go run -mod vendor build-tools/json-gogen/json-gogen.go
+
 binaries:
 	go run -mod vendor build-tools/bin-maker/bin-maker.go
 
