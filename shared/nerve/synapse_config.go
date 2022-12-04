@@ -1,21 +1,21 @@
 // Package nerve
 // file was created on 25.05.2022 by ds
-//          ,.,
-//         MMMM_    ,..,
-//           "_ "__"MMMMM          ,...,,
-//    ,..., __." --"    ,.,     _-"MMMMMMM
-//   MMMMMM"___ "_._   MMM"_."" _ """"""
-//    """""    "" , \_.   "_. ."
-//           ,., _"__ \__./ ."
-//          MMMMM_"  "_    ./
-//           ''''      (    )
-//    ._______________.-'____"---._.
-//     \                          /
-//      \________________________/
-//      (_)                    (_)
+//
+//	       ,.,
+//	      MMMM_    ,..,
+//	        "_ "__"MMMMM          ,...,,
+//	 ,..., __." --"    ,.,     _-"MMMMMMM
+//	MMMMMM"___ "_._   MMM"_."" _ """"""
+//	 """""    "" , \_.   "_. ."
+//	        ,., _"__ \__./ ."
+//	       MMMMM_"  "_    ./
+//	        ''''      (    )
+//	 ._______________.-'____"---._.
+//	  \                          /
+//	   \________________________/
+//	   (_)                    (_)
 //
 // ------------------------------------------------
-//
 package nerve
 
 const perChannelMemory = 1024 * 16 // * 8 bytes...
@@ -46,4 +46,8 @@ func (s *Synapse) getDefaultReaderLimit(_ QueueName, _ ConsumerId) QueueElementI
 
 func (s *Synapse) getDefaultReceiverChanLen() int {
 	return 10000
+}
+
+func (s *Synapse) getDefaultIOBatchSize(_ QueueName) int {
+	return 10_000
 }

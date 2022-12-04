@@ -101,13 +101,13 @@ func (m *%vReader) read%v() %v {
 	if m.parsed%v {
 		return m.data%v
 	}
-	m.parsed%v = true
 	wOffset := m.offset%v
 %v%v
 	m.data%v = entry
+	m.parsed%v = true
 	return entry
 }
-`, g.Struct.StructName, g.Name, g.Type.ReaderTypeName(), g.Name, g.Name, g.Name, g.Name, wireTypeCode, g.Type.EntryReader("\t", "entry"), g.Name))
+`, g.Struct.StructName, g.Name, g.Type.ReaderTypeName(), g.Name, g.Name, g.Name, wireTypeCode, g.Type.EntryReader("\t", "entry"), g.Name, g.Name))
 }
 
 func (g *GoStructField) writeUnmarshal(sb *strings.Builder) {

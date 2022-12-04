@@ -26,8 +26,17 @@ github.com/jmoiron/sqlx/reflectx
 # github.com/logrusorgru/aurora v2.0.3+incompatible
 ## explicit
 github.com/logrusorgru/aurora
+# github.com/mattn/go-runewidth v0.0.13
+## explicit; go 1.9
+github.com/mattn/go-runewidth
 # github.com/mattn/go-sqlite3 v1.14.12
 ## explicit; go 1.12
+# github.com/olekukonko/tablewriter v0.0.5
+## explicit; go 1.12
+github.com/olekukonko/tablewriter
+# github.com/rivo/uniseg v0.2.0
+## explicit; go 1.12
+github.com/rivo/uniseg
 # github.com/rs/zerolog v1.23.0
 ## explicit; go 1.15
 github.com/rs/zerolog

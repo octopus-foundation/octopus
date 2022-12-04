@@ -275,9 +275,11 @@ when I'm writing this. There are two things you should know:
 
 		tokens := make([]string, len(offsets))
 		dataRecords := make([]interface{}, len(offsets))
+		size := uint64(0)
 		for i, offset := range offsets {
 			tokens[i] = fmt.Sprintf("(%d, ?)", data[offset].DbId)
 			dataRecords[i] = data[offset].Data
+			size += uint64(len(data[offset].Data))
 		}
 
 		query := fmt.Sprintf(`insert into %s (id, data) values %s on duplicate key update data=values(data)`,
@@ -287,8 +289,13 @@ when I'm writing this. There are two things you should know:
 		ts := time.Now()
 		_, err = s.Db.GetRawDB().Exec(query, dataRecords...)
 		if time.Since(ts) > 1*time.Second {
-			s.logger.Info().Dur("query-time", time.Since(ts)).
-				Int("sid", int(shardId)).Str("q", query).Send()
+			s.logger.Warn().
+				Dur("query-time", time.Since(ts)).
+				Int("sid", int(shardId)).
+				Int("entries", len(tokens)).
+				Uint64("bytes", size).
+				Float64("avg-entry", float64(size)/float64(len(dataRecords))).
+				Msg("slow nerve mysql insert")
 		}
 		if err != nil {
 			return err

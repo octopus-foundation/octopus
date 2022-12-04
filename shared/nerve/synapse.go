@@ -116,6 +116,34 @@ func (s *Synapse) SendSourcedPack(queue QueueConfig, pack []*nerve.NerveSourcedP
 	return s.SendPack(queue, packets)
 }
 
+func (s *Synapse) AsyncSendSourcedPacket(queue QueueConfig, msg *nerve.NerveSourcedPacket) (chan *Packet, error) {
+	var confirmChan = make(chan *Packet)
+	packet := &Packet{Data: msg.Marshal(), confirmationChannel: confirmChan}
+	s.getQueueRunnerChannel(queue.Name, packet) <- packet
+
+	return confirmChan, nil
+}
+
+func (s *Synapse) AsyncSendSourcedPack(queue QueueConfig, msg []*nerve.NerveSourcedPacket) (chan struct{}, error) {
+	var confirmChan = make(chan *Packet, len(msg))
+	var packets = make([]*Packet, len(msg))
+	for i, data := range msg {
+		packets[i] = &Packet{Data: data.Marshal(), confirmationChannel: confirmChan}
+		s.getQueueRunnerChannel(queue.Name, packets[i]) <- packets[i]
+	}
+
+	var res = make(chan struct{})
+	go func() {
+		var cnt = 0
+		for cnt < len(packets) {
+			<-confirmChan
+			cnt += 1
+		}
+		res <- struct{}{}
+	}()
+	return res, nil
+}
+
 // GetReceiver returns pointer to Receiver structure
 // which in turn contains two channels - one to receive
 // data packets from and one to send empty structure to
