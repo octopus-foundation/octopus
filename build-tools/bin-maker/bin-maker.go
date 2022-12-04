@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"octopus/build-tools/bin-maker/internal"
-	"octopus/parts/tools/shared/ulimits"
+	"octopus/shared/ulimits"
 	"strings"
 )
 
